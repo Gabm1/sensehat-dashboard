@@ -1,0 +1,37 @@
+w terminal
+
+sudo nano /etc/systemd/system/senseweb.service
+
+
+w plik
+
+[Unit]
+Description=Sense HAT Web Dashboard with GitHub Sync
+After=network-online.target
+
+[Service]
+ExecStart=/bin/bash -c '
+  cd /home/pi &&
+  rm -rf /home/pi/mnt &&
+  git clone https://github.com/TWOJA_NAZWA_UZYTKOWNIKA/TWOJE_REPOZYTORIUM.git /home/pi/mnt &&
+  cd /home/pi/mnt &&
+  /usr/bin/php -S 0.0.0.0:8000
+'
+WorkingDirectory=/home/pi
+Restart=always
+StandardOutput=append:/var/log/senseweb.log
+StandardError=append:/var/log/senseweb.err
+
+[Install]
+WantedBy=multi-user.target
+
+w terminal 
+
+sudo systemctl daemon-reload
+sudo systemctl enable senseweb.service
+sudo systemctl start senseweb.service
+
+sprawdzenie
+
+
+sudo systemctl status senseweb.service

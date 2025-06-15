@@ -1,0 +1,35 @@
+w terminal
+
+sudo nano /etc/systemd/system/senseweb.service
+
+
+w plik
+
+[Unit]
+Description=Sense HAT Web Dashboard Server
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/php -S 0.0.0.0:8000 -t /mnt
+WorkingDirectory=/mnt
+Restart=always
+StandardOutput=append:/var/log/senseweb.log
+StandardError=append:/var/log/senseweb.err
+
+[Install]
+WantedBy=multi-user.target
+
+ctrl+o zapisuje
+ztrl+x zamyka
+
+w terminal
+
+sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
+sudo systemctl enable senseweb.service
+sudo systemctl start senseweb.service
+
+sprawdza status
+
+sudo systemctl status senseweb.service
+

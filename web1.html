@@ -1,0 +1,89 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Sense HAT Dashboard</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <h1>Sense HAT Dashboard</h1>
+  <div id="sensor-data"></div>
+
+  <h3>Archived Temperature Log</h3>
+  <button onclick="loadTempLog()">Load Temperature Log</button>
+  <canvas id="tempChart" width="400" height="200"></canvas>
+
+<script>
+function updateSensorData() {
+  $.get('allsensors.php?T=1&P=1&H=1&r=1&p=1&y=1', function (data) {
+    $('#sensor-data').empty();
+
+    $.each(data, function (key, value) {
+      if (key === "joystick" && Array.isArray(value)) {
+        $('#sensor-data').append($('<div>').text("Joystick position:"));
+        value.forEach(evt => {
+          $('#sensor-data').append($('<div>').text(`→ ${evt.direction} (${evt.action})`));
+        });
+      } else if (typeof value === 'object' && value !== null && 'value' in value) {
+        const display = `${key.charAt(0).toUpperCase() + key.slice(1)}: ${value.value} ${value.unit}`;
+        $('#sensor-data').append($('<div>').text(display));
+      }
+    });
+  });
+}
+
+function loadTempLog(auto = false) {
+  fetch('sensor_log.json')
+    .then(res => res.json())
+    .then(log => {
+      const timestamps = log.map(entry => entry.timestamp);
+      const temps = log.map(entry => entry.temperature);
+
+      const ctx = document.getElementById('tempChart').getContext('2d');
+      if (window.tempChartInstance) {
+        tempChartInstance.data.labels = timestamps;
+        tempChartInstance.data.datasets[0].data = temps;
+        tempChartInstance.update();
+      } else {
+        window.tempChartInstance = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: timestamps,
+            datasets: [{
+              label: 'Temperature (°C)',
+              data: temps,
+              borderColor: 'red',
+              backgroundColor: 'rgba(255, 0, 0, 0.1)',
+              tension: 0.3
+            }]
+          },
+          options: {
+            responsive: true
+          }
+        });
+      }
+
+      if (!auto) console.log("Manual log loaded");
+    })
+    .catch(() => {
+      if (!auto) alert("Failed to load temperature log.");
+    });
+}
+
+setInterval(() => loadTempLog(true), 5000);
+
+
+setInterval(updateSensorData, 2000);
+</script>
+
+<hr>
+<h3>LED Matrix</h3>
+<input type="color" id="color-picker" value="#ff0000">
+<div id="led-matrix"></div>
+<button id="update-matrix-button">Update LED Matrix</button>
+<script src="script.js"></script>
+</body>
+
+</html>
