@@ -10,18 +10,11 @@ Description=Sense HAT Web Dashboard with GitHub Sync
 After=network-online.target
 
 [Service]
-ExecStart=/bin/bash -c '
-  cd /home/pi &&
-  rm -rf /home/pi/mnt &&
-  git clone https://github.com/TWOJA_NAZWA_UZYTKOWNIKA/TWOJE_REPOZYTORIUM.git /home/pi/mnt &&
-  cd /home/pi/mnt &&
-  /usr/bin/php -S 0.0.0.0:8000
-'
+ExecStart=/bin/bash -c 'until ping -c1 github.com &>/dev/null; do sleep 2; done &&  cd /home/pi && >
 WorkingDirectory=/home/pi
 Restart=always
 StandardOutput=append:/var/log/senseweb.log
 StandardError=append:/var/log/senseweb.err
-
 [Install]
 WantedBy=multi-user.target
 
